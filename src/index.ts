@@ -14,13 +14,14 @@ import chalk from 'chalk';
 class BranchingThoughtServer {
   private branchManager = new BranchManager();
 
-  processThought(input: unknown): { content: Array<{ type: string; text: string }>; isError?: boolean } {
+  async processThought(input: unknown): Promise<{ content: Array<{ type: string; text: string }>; isError?: boolean }> {
     try {
       const inputData = input as any;
       
       // Handle commands if present
       if (inputData.command) {
-        return this.handleCommand(inputData.command);
+        const result = await this.handleCommand(inputData.command);
+        return { ...result, isError: false };
       }
 
       // Handle regular thought input
@@ -60,7 +61,12 @@ class BranchingThoughtServer {
     }
   }
 
-  private handleCommand(command: { type: string; branchId?: string }): { content: Array<{ type: string; text: string }> } {
+  private async handleCommand(command: { 
+    type: string; 
+    branchId?: string;
+    query?: string;
+    options?: Record<string, unknown>;
+  }): Promise<{ content: Array<{ type: string; text: string }> }> {
     try {
       switch (command.type) {
         case 'list': {
@@ -113,6 +119,48 @@ class BranchingThoughtServer {
             content: [{
               type: "text",
               text: history
+            }]
+          };
+        }
+
+        case 'semantic-search': {
+          if (!command.query) {
+            throw new Error('Query required for semantic search');
+          }
+          const results = await this.branchManager.semanticSearch(
+            command.query,
+            command.options as any
+          );
+          return {
+            content: [{
+              type: "text",
+              text: JSON.stringify(results, null, 2)
+            }]
+          };
+        }
+
+        case 'analyze-branch': {
+          if (!command.branchId) {
+            throw new Error('branchId required for analysis');
+          }
+          const analytics = await this.branchManager.analyzeBranch(command.branchId);
+          return {
+            content: [{
+              type: "text",
+              text: JSON.stringify(analytics, null, 2)
+            }]
+          };
+        }
+
+        case 'detect-bias': {
+          if (!command.branchId) {
+            throw new Error('branchId required for bias detection');
+          }
+          const biases = this.branchManager.detectBranchBias(command.branchId);
+          return {
+            content: [{
+              type: "text",
+              text: JSON.stringify(biases, null, 2)
             }]
           };
         }
@@ -202,16 +250,29 @@ Commands:
       },
       command: {
         type: "object",
-        description: "Optional: Navigation command",
+        description: "Optional: Navigation or analysis command",
         properties: {
           type: {
             type: "string",
-            enum: ["list", "focus", "history"],
+            enum: [
+              "list", "focus", "history",
+              "semantic-search", "analyze-branch",
+              "detect-bias", "visualize",
+              "track-evolution"
+            ],
             description: "Command type"
           },
           branchId: {
             type: "string",
             description: "Branch ID for commands that require it"
+          },
+          query: {
+            type: "string",
+            description: "Query string for search commands"
+          },
+          options: {
+            type: "object",
+            description: "Additional options for commands"
           }
         },
         required: ["type"]

@@ -5,7 +5,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # TypeScript
-dist/
+
 build/
 *.tsbuildinfo
 
@@ -18,9 +18,7 @@ build/
 Thumbs.db
 
 # Environment variables
-.env
-.env.local
-.env.*.local
+
 
 # Logs
 logs/

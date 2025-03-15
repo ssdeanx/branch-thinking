@@ -11,16 +11,19 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc && chmod +x dist/index.js",
+    "build": "tsc && node dist/index.js",
     "prepare": "npm run build",
     "watch": "tsc --watch"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "0.5.0",
-    "chalk": "^5.3.0"
+    "@modelcontextprotocol/sdk": "^1.7.0",
+    "chalk": "^5.4.1",
+    "lodash": "^4.17.21",
+    "neo4j": "^1.1.1",
+    "node-fetch": "^3.3.2"
   },
   "devDependencies": {
-    "@types/node": "^22",
-    "typescript": "^5.3.3"
+    "@types/node": "^22.13.10",
+    "typescript": "^5.8.2"
   }
 }

@@ -1,5 +1,23 @@
 import chalk from 'chalk';
-import { ThoughtBranch, ThoughtData, Insight, CrossReference, InsightType, CrossRefType, BranchingThoughtInput } from './types.js';
+import { 
+  ThoughtBranch, 
+  ThoughtData, 
+  Insight, 
+  CrossReference, 
+  InsightType, 
+  CrossRefType, 
+  BranchingThoughtInput, 
+  EnhancedBranch, 
+  SemanticNode, 
+  TemporalEvolution, 
+  MultiHopReasoning,
+  VisualizationConfig,
+  AnalyticsData,
+  BiasAnalysis
+} from './types.js';
+import { SemanticProcessor } from './semanticProcessor.js';
+import { BiasDetector } from './biasDetector.js';
+import { AnalyticsEngine } from './analytics.js';
 
 export class BranchManager {
   private branches: Map<string, ThoughtBranch> = new Map();
@@ -7,6 +25,27 @@ export class BranchManager {
   private thoughtCounter = 0;
   private crossRefCounter = 0;
   private activeBranchId: string | null = null;
+  private semanticProcessor: SemanticProcessor;
+  private temporalEvolutionMap: Map<string, TemporalEvolution>;
+  private readonly analyticsEngine: AnalyticsEngine;
+  private readonly biasDetector: BiasDetector;
+
+  private reinforcementLearning: {
+    learningRate: number;
+    decayFactor: number;
+    explorationRate: number;
+  } = {
+    learningRate: 0.1,
+    decayFactor: 0.95,
+    explorationRate: 0.2
+  };
+
+  constructor() {
+    this.semanticProcessor = new SemanticProcessor();
+    this.temporalEvolutionMap = new Map();
+    this.analyticsEngine = new AnalyticsEngine();
+    this.biasDetector = new BiasDetector();
+  }
 
   generateId(prefix: string): string {
     const timestamp = Date.now();
@@ -208,5 +247,304 @@ ${insights}
 │ Cross References:
 ${crossRefs}
 └─────────────────────────────────────────────`;
+  }
+
+  async visualizeBranch(
+    branchId: string, 
+    config: Partial<VisualizationConfig> = {}
+  ): Promise<void> {
+    const branch = this.getBranch(branchId) as EnhancedBranch;
+    if (!branch) throw new Error(`Branch ${branchId} not found`);
+
+    const defaultConfig: VisualizationConfig = {
+      layout: 'force',
+      style: {
+        nodeSize: 10,
+        edgeWidth: 1,
+        colorScheme: ['#1f77b4', '#ff7f0e', '#2ca02c'],
+        highlightColor: '#d62728'
+      },
+      filters: {
+        minConfidence: 0.5
+      },
+      interactions: {
+        zoom: true,
+        drag: true,
+        highlight: true,
+        details: true
+      }
+    };
+
+    const finalConfig = { ...defaultConfig, ...config };
+    branch.visualizationData = {
+      layout: finalConfig.layout,
+      positions: new Map()
+    };
+
+    // Calculate positions based on layout algorithm
+    switch (finalConfig.layout) {
+      case 'force':
+        await this.calculateForceLayout(branch);
+        break;
+      case 'hierarchical':
+        await this.calculateHierarchicalLayout(branch);
+        break;
+      case 'radial':
+        await this.calculateRadialLayout(branch);
+        break;
+      case 'temporal':
+        await this.calculateTemporalLayout(branch);
+        break;
+    }
+  }
+
+  private async calculateForceLayout(branch: EnhancedBranch): Promise<void> {
+    // Implement force-directed layout algorithm
+    // This would use something like d3-force in a real implementation
+  }
+
+  private async calculateHierarchicalLayout(branch: EnhancedBranch): Promise<void> {
+    // Implement hierarchical layout algorithm
+  }
+
+  private async calculateRadialLayout(branch: EnhancedBranch): Promise<void> {
+    // Implement radial layout algorithm
+  }
+
+  private async calculateTemporalLayout(branch: EnhancedBranch): Promise<void> {
+    // Implement temporal layout algorithm
+  }
+
+  async detectContradictions(branchId: string): Promise<Array<{
+    nodeId: string;
+    contradictsWith: string[];
+    score: number;
+  }>> {
+    const branch = this.getBranch(branchId) as EnhancedBranch;
+    if (!branch) throw new Error(`Branch ${branchId} not found`);
+
+    const contradictions: Array<{
+      nodeId: string;
+      contradictsWith: string[];
+      score: number;
+    }> = [];
+
+    // Implement contradiction detection logic
+    // This would analyze semantic relationships and logical consistency
+
+    return contradictions;
+  }
+
+  async applyReinforcement(branchId: string, feedback: {
+    nodeId: string;
+    reward: number;
+  }[]): Promise<void> {
+    const branch = this.getBranch(branchId) as EnhancedBranch;
+    if (!branch) throw new Error(`Branch ${branchId} not found`);
+
+    if (!branch.reinforcementData) {
+      branch.reinforcementData = {
+        learningRate: this.reinforcementLearning.learningRate,
+        rewardHistory: [],
+        modelParameters: new Map()
+      };
+    }
+
+    // Apply reinforcement learning updates
+    for (const { nodeId, reward } of feedback) {
+      const node = branch.nodes.find(n => n.id === nodeId);
+      if (node) {
+        // Update confidence based on reward
+        node.confidence = this.updateConfidence(
+          node.confidence,
+          reward,
+          branch.reinforcementData.learningRate
+        );
+        
+        // Record reward history
+        branch.reinforcementData.rewardHistory.push({
+          timestamp: new Date(),
+          reward
+        });
+      }
+    }
+  }
+
+  private updateConfidence(currentConfidence: number, reward: number, learningRate: number): number {
+    const newConfidence = currentConfidence + learningRate * (reward - currentConfidence);
+    return Math.max(0, Math.min(1, newConfidence));
+  }
+
+  async semanticSearch(query: string, options: {
+    threshold?: number;
+    maxResults?: number;
+    branchId?: string;
+  } = {}): Promise<Array<{node: SemanticNode; similarity: number}>> {
+    const threshold = options.threshold ?? 0.7;
+    const maxResults = options.maxResults ?? 10;
+    
+    const queryEmbedding = await this.semanticProcessor.embedText(query);
+    const results: Array<{node: SemanticNode; similarity: number}> = [];
+
+    const branches = options.branchId ? 
+      [this.getBranch(options.branchId)] : 
+      this.getAllBranches();
+
+    for (const branch of branches) {
+      if (!branch) continue;
+
+      for (const node of (branch as EnhancedBranch).nodes) {
+        if (!node.embedding) {
+          node.embedding = await this.semanticProcessor.embedText(node.label);
+        }
+
+        const similarity = this.semanticProcessor.calculateSimilarity(
+          queryEmbedding,
+          node.embedding
+        );
+
+        if (similarity >= threshold) {
+          results.push({ node: node as SemanticNode, similarity });
+        }
+      }
+    }
+
+    return results
+      .sort((a, b) => b.similarity - a.similarity)
+      .slice(0, maxResults);
+  }
+
+  async findMultiHopPath(
+    startNodeId: string,
+    endNodeId: string,
+    maxDepth: number = 5
+  ): Promise<MultiHopReasoning[]> {
+    const paths: MultiHopReasoning[] = [];
+    const visited = new Set<string>();
+
+    const dfs = async (
+      currentId: string,
+      path: string[],
+      reasoning: Array<{from: string; to: string; reasoning: string; confidence: number}>,
+      depth: number
+    ) => {
+      if (depth > maxDepth) return;
+      if (currentId === endNodeId) {
+        paths.push({
+          path,
+          confidence: reasoning.reduce((acc, step) => acc * step.confidence, 1),
+          evidence: [],
+          intermediateSteps: reasoning
+        });
+        return;
+      }
+
+      visited.add(currentId);
+
+      const currentNode = this.findNodeById(currentId) as SemanticNode;
+      if (!currentNode) return;
+
+      for (const link of currentNode.semanticLinks) {
+        if (!visited.has(link.targetId)) {
+          const nextNode = this.findNodeById(link.targetId) as SemanticNode;
+          if (!nextNode) continue;
+
+          const stepReasoning = {
+            from: currentId,
+            to: link.targetId,
+            reasoning: `Connected via ${link.relationship} relationship`,
+            confidence: link.similarity
+          };
+
+          await dfs(
+            link.targetId,
+            [...path, link.targetId],
+            [...reasoning, stepReasoning],
+            depth + 1
+          );
+        }
+      }
+
+      visited.delete(currentId);
+    };
+
+    await dfs(startNodeId, [startNodeId], [], 0);
+    return paths.sort((a, b) => b.confidence - a.confidence);
+  }
+
+  trackTemporalEvolution(nodeId: string): void {
+    const node = this.findNodeById(nodeId) as SemanticNode;
+    if (!node) throw new Error(`Node ${nodeId} not found`);
+
+    let evolution = this.temporalEvolutionMap.get(nodeId);
+    if (!evolution) {
+      evolution = {
+        nodeId,
+        timestamps: [],
+        confidenceHistory: [],
+        stateTransitions: []
+      };
+      this.temporalEvolutionMap.set(nodeId, evolution);
+    }
+
+    // Record current state
+    evolution.timestamps.push(new Date());
+    evolution.confidenceHistory.push(node.confidence);
+
+    // Check for state transitions
+    const currentState = node.evolutionState;
+    const lastTransition = evolution.stateTransitions[evolution.stateTransitions.length - 1];
+    
+    if (!lastTransition || lastTransition.to !== currentState) {
+      evolution.stateTransitions.push({
+        from: lastTransition?.to || 'initial',
+        to: currentState,
+        timestamp: new Date(),
+        reason: this.determineTransitionReason(node)
+      });
+    }
+
+    // Update temporal score based on evolution history
+    node.temporalScore = this.calculateTemporalScore(evolution);
+  }
+
+  private findNodeById(nodeId: string): SemanticNode | undefined {
+    for (const branch of this.getAllBranches()) {
+      const enhancedBranch = branch as EnhancedBranch;
+      const node = enhancedBranch.nodes.find(n => n.id === nodeId);
+      if (node) return node as SemanticNode;
+    }
+    return undefined;
+  }
+
+  private determineTransitionReason(node: SemanticNode): string {
+    // Implement logic to determine why a state transition occurred
+    // This could be based on confidence changes, contradictions, etc.
+    return "State transition based on updated evidence and confidence";
+  }
+
+  private calculateTemporalScore(evolution: TemporalEvolution): number {
+    const recentConfidence = evolution.confidenceHistory.slice(-5);
+    const trend = recentConfidence.reduce((acc, conf, i) => {
+      return acc + conf * Math.exp(-0.2 * (recentConfidence.length - i - 1));
+    }, 0) / recentConfidence.length;
+
+    const stateStability = 1 - (evolution.stateTransitions.length / evolution.timestamps.length);
+    
+    return (trend * 0.7 + stateStability * 0.3);
+  }
+
+  async analyzeBranch(branchId: string): Promise<AnalyticsData> {
+    const branch = this.getBranch(branchId);
+    if (!branch) {
+      throw new Error(`Branch ${branchId} not found`);
+    }
+    return this.analyticsEngine.generateBranchAnalytics(branch);
+  }
+
+  public async detectBranchBias(branchId: string): Promise<BiasAnalysis[]> {
+    const branch = this.getBranch(branchId) as EnhancedBranch;
+    if (!branch) throw new Error(`Branch ${branchId} not found`);
+    return [...(await this.biasDetector.detectBias(branch.nodes))];
   }
 }
