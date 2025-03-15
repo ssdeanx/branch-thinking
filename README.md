@@ -607,19 +607,17 @@ Note: Architecture updated as of February 19, 2024. Components reflect current i
 - Security Tests: 100%
 - Compliance: SOC2
 
-Note: All metrics are continuously monitored and updated._
-
----
-
-Last Updated: March 15, 2025 15:30 EST
-Next Scheduled Update: March 26, 2025
-
 ## 📄 License
 
-MIT © [Deanmachines](https://deanmachines.com)]
+MIT © [Deanmachines](https://deanmachines.com)
 
 ---
 
 [Documentation] • [Examples] • [Contributing] • [Report Bug]
 
 Built for the Model Context Protocol
+
+---
+
+Last Updated: March 15, 2025 15:30 EST
+Next Scheduled Update: March 26, 2025
