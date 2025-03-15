@@ -1,6 +1,6 @@
 {
   "name": "@modelcontextprotocol/server-branch-thinking",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "MCP server for managing branching thoughts with insights and cross-references",
   "license": "MIT",
   "type": "module",
