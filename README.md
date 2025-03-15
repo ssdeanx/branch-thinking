@@ -444,16 +444,6 @@ Contributions welcome! See [Contributing Guide](CONTRIBUTING.md).
    - Use cross-references for connections
    - Monitor bias scores
 
-## 📄 License
-
-MIT © [Your Organization]
-
----
-
-[Documentation] • [Examples] • [Contributing] • [Report Bug]
-
-Built for the Model Context Protocol_
-
 ## 🏗️ System Architecture
 
 ```mermaid
@@ -623,3 +613,13 @@ Note: All metrics are continuously monitored and updated._
 
 Last Updated: March 15, 2025 15:30 EST
 Next Scheduled Update: March 26, 2025
+
+## 📄 License
+
+MIT © [Deanmachines](https://deanmachines.com)]
+
+---
+
+[Documentation] • [Examples] • [Contributing] • [Report Bug]
+
+Built for the Model Context Protocol
