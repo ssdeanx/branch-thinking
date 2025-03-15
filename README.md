@@ -537,9 +537,9 @@ graph TB
     PM --> ML
 
     %% Status Styling
-    classDef implemented fill:#90EE90,stroke:#333,stroke-width:2px;
-    classDef inProgress fill:#FFB6C1,stroke:#333,stroke-width:2px;
-    classDef planned fill:#87CEEB,stroke:#333,stroke-width:2px;
+    classDef implemented fill:#90EE90,stroke:#333,stroke-width:2px,color:#000;
+    classDef inProgress fill:#FFB6C1,stroke:#333,stroke-width:2px,color:#000;
+    classDef planned fill:#87CEEB,stroke:#333,stroke-width:2px,color:#000;
 
     %% Implementation Status
     class UI,Server,Transport,Protocol,BM,SP,BD,AE,TB,TN,SV,CR,Claude,VSCode,Cursor,CLI implemented;
