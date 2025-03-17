@@ -1,3 +1,5 @@
+<div align="center">
+
 # 🧠 Neural Architect (NA) | MCP Branch Thinking Tool
 
 [![MCP Compatible](https://img.shields.io/badge/MCP-Compatible-brightgreen.svg)](https://github.com/modelcontextprotocol)
